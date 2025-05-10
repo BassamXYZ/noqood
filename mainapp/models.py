@@ -32,6 +32,12 @@ class Product(models.Model):
     )
     name = models.CharField(max_length=200)
     product_type = models.CharField(max_length=10, choices=PRODUCT_TYPES)
+    image = models.ImageField(
+        upload_to='products/',
+        blank=True,
+        null=True,
+        verbose_name='Product Image'
+    )
 
 
 class Key(models.Model):
