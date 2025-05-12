@@ -1,14 +1,23 @@
-from ..models import Product
+from ..models import Product, Account
 from django.shortcuts import render
-from django.http import HttpResponse
 
 
 def home(request):
     products = Product.objects.all()[:20]
-    return render(request, 'store/home.html', {
+    context = {
         'products': products,
         'types': Product.PRODUCT_TYPES
-    })
+    }
+
+    if request.user.is_authenticated:
+        account = Account.objects.filter(user=request.user)
+        context = {
+            'account': account[0],
+            'products': products,
+            'types': Product.PRODUCT_TYPES
+        }
+
+    return render(request, 'store/home.html', context)
 
 
 def filter_products(request):
