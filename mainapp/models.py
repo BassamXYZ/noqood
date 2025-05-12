@@ -31,7 +31,7 @@ class Product(models.Model):
         ('SUBSCRIPTION', 'Subscription'),
     )
     name = models.CharField(max_length=200)
-    product_type = models.CharField(max_length=10, choices=PRODUCT_TYPES)
+    product_type = models.CharField(max_length=15, choices=PRODUCT_TYPES)
     image = models.ImageField(
         upload_to='products/',
         blank=True,

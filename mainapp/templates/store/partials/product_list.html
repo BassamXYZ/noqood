@@ -1,0 +1,9 @@
+<!-- templates/store/partials/product_list.html -->
+{% for product in products %}
+<div class="col">
+  <div class="product-card h-100 p-3 rounded-3">
+    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid rounded-2 mb-3">
+    <h3 class="h5 text-white mb-2 text-center">{{ product.name }}</h3>
+  </div>
+</div>
+{% endfor %}
