@@ -18,11 +18,15 @@ def account(request):
 def history(request):
     transactions = Transaction.objects.filter(
         user=request.user).order_by('-created_at')
-    account = Account.objects.filter(user=request.user)
 
     paginator = Paginator(transactions, 20)
-    page_number = request.GET.get('page')
+    page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
+
+    if request.headers.get('HX-Request'):
+        return render(request, 'store/partials/history_partial.html', {'transactions': page_obj})
+
+    account = Account.objects.filter(user=request.user)
 
     context = {
         'user': request.user,

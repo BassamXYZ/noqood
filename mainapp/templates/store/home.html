@@ -1,62 +1,84 @@
-<!-- templates/store/home.html -->
 {% extends 'base.html' %}
+
 {% load static %}
 
 {% block title %}الرئيسية{% endblock %}
-{% block extra_css %}
-<style>
-    .btn-primary {
-        background-color: #447788;
-        border-color: #447788;
-    }
-    .btn-primary:hover {
-        background-color: #4e8293;
-        border-color: #4e8293;
-    }
-    .btn-outline-primary {
-      color: #447788;
-      border-color: #447788;
-    }
-    .btn-outline-primary:hover {
-      background-color: #4e8293 !important;
-      border-color: #4e8293;
-    }
-    .btn-check:checked + .btn-outline-primary,
-    .btn-check:active + .btn-outline-primary,
-    .btn-outline-primary.active {
-        background-color: #447788;
-        color: #fff;
-    }
-    .product-card {
-        background-color: #1a1a1a;
-        border: 1px solid #2d2d2d;
-        transition: transform 0.3s ease;
-    }
-    .product-card:hover {
-        transform: translateY(-5px);
-        border-color: #447788;
-    }
-</style>
-{% endblock %}
 
 {% block content %}
-<div class="btn-group" dir="ltr" role="group" aria-label="Card Types" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-  {% for type in types %}
-  <button hx-get="{% url 'filter_products' %}?type={{ type | first }}" hx-target="#product-grid"
-    hx-trigger="click"
+<div class="text-center">
+  <div class="btn-group mx-5" dir="ltr" role="group" aria-label="Card Types" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    {% for type in types %}
+    <button hx-get="{% url 'filter_products' %}?type={{ type | first }}" hx-target="#product-grid"
+    hx-push-url="true"
     class="btn {% if request.GET.type == type.id %}btn-primary{% else %}btn-outline-primary{% endif %}" type="button">
-    {{ type | last }}
-  </button>
-  {% endfor %}
-  <button hx-get="{% url 'filter_products' %}" hx-target="#product-grid" hx-trigger="click"
+      {{ type | last }}
+    </button>
+    {% endfor %}
+    <button hx-get="{% url 'filter_products' %}" hx-target="#product-grid" hx-push-url="true"
     class="btn {% if not request.GET.type %}btn-outline-primary{% else %}btn-primary{% endif %}" type="button">
-    الكل
-  </button>
+      الكل
+    </button>
+  </div>
 </div>
 
 <div id="product-grid" hx-swap="outerHTML" class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4 mt-3">
   {% include 'store/partials/product_list.html' %}
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .btn-primary {
+    background-color: #447788;
+    border-color: #447788;
+  }
+
+  .btn-primary:hover {
+    background-color: #4e8293;
+    border-color: #4e8293;
+  }
+
+  .btn-outline-primary {
+    color: #447788;
+    border-color: #447788;
+  }
+
+  .btn-outline-primary:hover {
+    background-color: #4e8293 !important;
+    border-color: #4e8293;
+  }
+
+  .btn-check:checked+.btn-outline-primary,
+  .btn-check:active+.btn-outline-primary,
+  .btn-outline-primary.active {
+    background-color: #447788;
+    color: #fff;
+  }
+
+  .product-card {
+    background-color: #1a1a1a;
+    border: 1px solid #2c2c2c;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .product-card:hover {
+    transform: translateY(-5px);
+    border-color: #447788;
+    box-shadow: 0 4px 15px rgba(68, 119, 136, 0.3);
+  }
+
+  .modal-content {
+    border: 1px solid #447788;
+  }
+
+  .list-group-item {
+    transition: background-color 0.3s ease;
+  }
+
+  .list-group-item:hover {
+    background-color: #2c2c2c !important;
+  }
+</style>
 {% endblock %}
 
 {% block extra_js %}

@@ -1,0 +1,27 @@
+{% for transaction in transactions %}
+<tr>
+  <td class="text-end">{{ transaction.created_at|date:"Y/m/d H:i" }}</td>
+  <td class="text-end">{{ transaction.get_transaction_type_display }}</td>
+  <td class="text-end">
+    {% if transaction.order %}
+      {{ transaction.order.product.name }}
+    {% else %}
+      ---
+    {% endif%}
+  </td>
+  <td class="text-end {% if transaction.amount > 0 %}text-success{% else %}text-danger{% endif %}">
+    ${{ transaction.amount|floatformat:2 }}
+  </td>
+  <td class="text-end">${{ transaction.balance_after|floatformat:2 }}</td>
+</tr>
+<tr>
+  {% if transaction.order %}
+  <td class="text-end">{{ transaction.order.key.key }}</td>
+  {% endif %}
+</tr>
+{% endfor %}
+
+{% if transactions.has_next %}
+<div hx-get="{% url 'history' %}?page={{ transactions.next_page_number }}" hx-trigger="revealed" hx-swap="afterend">
+</div>
+{% endif %}

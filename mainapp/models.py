@@ -1,8 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
+from django.utils import timezone
 
 
 class Account(models.Model):
@@ -25,6 +26,7 @@ class Transaction(models.Model):
     TRANSACTION_TYPES = (
         ('DEPOSIT', 'إيداع'),
         ('PURCHASE', 'شراء'),
+        ('WITHDRAWAL', 'سحب'),
     )
 
     user = models.ForeignKey(
@@ -65,18 +67,36 @@ class Product(models.Model):
         return self.name
 
 
+class PriceCategory(models.Model):
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='price_categories'
+    )
+    name = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        unique_together = ('product', 'name')
+
+
 class Key(models.Model):
     KEY_STATUS = (
         ('AVAILABLE', 'متاح'),
         ('SOLD', 'مباع'),
     )
 
-    product = models.ForeignKey(
-        Product, on_delete=models.CASCADE, related_name='keys')
+    price_category = models.ForeignKey(
+        PriceCategory,
+        on_delete=models.CASCADE,
+        related_name='keys'
+    )
     key = models.CharField(max_length=255, unique=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(
-        max_length=10, choices=KEY_STATUS, default='AVAILABLE')
+        max_length=10,
+        choices=KEY_STATUS,
+        default='AVAILABLE'
+    )
     sold_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
@@ -98,7 +118,7 @@ class Order(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.pk:  # Only on creation
-            self.total_price = self.key.price
+            self.total_price = self.key.price_category.price
         super().save(*args, **kwargs)
 
 
@@ -133,68 +153,54 @@ def complete_order(sender, instance, created, **kwargs):
         account.save()
 
 
-"""
-### Hierarchical Category Table
+@receiver(pre_save, sender=Account)
+def capture_original_balance(sender, instance, **kwargs):
+    """Capture the balance before saving."""
+    if instance.pk:
+        try:
+            original = Account.objects.get(pk=instance.pk)
+            instance._original_balance = original.balance
+        except Account.DoesNotExist:
+            instance._original_balance = None
+    else:
+        instance._original_balance = None
 
-class Category(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    parent = models.ForeignKey(
-        'self',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='children'
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=['name', 'parent'],
-                name='unique_category_name_per_parent'
+@receiver(post_save, sender=Account)
+def create_admin_transaction(sender, instance, created, **kwargs):
+    """Create a transaction if the balance was changed via the admin."""
+    from_admin = getattr(instance, '_from_admin', False)
+    if not from_admin:
+        return
+
+    if hasattr(instance, '_from_admin'):
+        del instance._from_admin
+
+    if created:
+        if instance.balance != 0:
+            Transaction.objects.create(
+                user=instance.user,
+                amount=instance.balance,
+                transaction_type='DEPOSIT',
+                balance_after=instance.balance,
+                order=None
             )
-        ]
-        verbose_name_plural = "Categories"
+        return
 
+    original_balance = getattr(instance, '_original_balance', None)
+    if original_balance is None:
+        return
 
-### Allow Price Categories
+    new_balance = instance.balance
+    difference = new_balance - original_balance
+    if difference == 0:
+        return
 
-class Product(models.Model):
-    PRODUCT_TYPES = (
-        ('GAME', 'Game'),
-        ('SOFTWARE', 'Software'),
+    transaction_type = 'DEPOSIT' if difference > 0 else 'WITHDRAWAL'
+    Transaction.objects.create(
+        user=instance.user,
+        amount=difference,
+        transaction_type=transaction_type,
+        balance_after=new_balance,
+        order=None
     )
-    name = models.CharField(max_length=200)
-    product_type = models.CharField(max_length=10, choices=PRODUCT_TYPES)
-
-class PriceCategory(models.Model):
-    product = models.ForeignKey(
-        Product,
-        on_delete=models.CASCADE,
-        related_name='price_categories'
-    )
-    name = models.CharField(max_length=100)  # e.g., "Standard", "Deluxe Edition"
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-
-    class Meta:
-        unique_together = ('product', 'name')  # Ensure unique category names per product
-
-class Key(models.Model):
-    KEY_STATUS = (
-        ('AVAILABLE', 'Available'),
-        ('SOLD', 'Sold'),
-    )
-
-    price_category = models.ForeignKey(
-        PriceCategory,
-        on_delete=models.CASCADE,
-        related_name='keys'
-    )
-    key = models.CharField(max_length=255, unique=True)
-    status = models.CharField(
-        max_length=10,
-        choices=KEY_STATUS,
-        default='AVAILABLE'
-    )
-    sold_at = models.DateTimeField(null=True, blank=True)
-"""

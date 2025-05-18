@@ -15,26 +15,14 @@
             <thead class="bg-black">
               <tr>
                 <th class="text-end">التاريخ</th>
-                <th class="text-end">الوصف</th>
+                <th class="text-end">النوع</th>
+                <th class="text-end">المنتج</th>
                 <th class="text-end">المبلغ</th>
                 <th class="text-end">الرصيد بعد العملية</th>
               </tr>
             </thead>
-            <tbody>
-              {% for transaction in transactions %}
-              <tr>
-                <td class="text-end">{{ transaction.date|date:"Y/m/d H:i" }}</td>
-                <td class="text-end">{{ transaction.description }}</td>
-                <td class="text-end {% if transaction.amount > 0 %}text-success{% else %}text-danger{% endif %}">
-                  ${{ transaction.amount|floatformat:2 }}
-                </td>
-                <td class="text-end">${{ transaction.balance_after|floatformat:2 }}</td>
-              </tr>
-              {% empty %}
-              <tr>
-                <td colspan="4" class="text-center py-4">لا توجد عمليات لعرضها</td>
-              </tr>
-              {% endfor %}
+            <tbody id="transaction-list">
+              {% include 'store/partials/history_partial.html' %}
             </tbody>
           </table>
         </div>
@@ -62,5 +50,18 @@
   .dark-bg {
     background-color: #0c0c0c;
   }
+
+  .htmx-indicator {
+    opacity: 0;
+    transition: opacity 200ms ease-in;
+  }
+
+  .htmx-request .htmx-indicator {
+    opacity: 1;
+  }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
 {% endblock %}

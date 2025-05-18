@@ -7,7 +7,6 @@ from .views import index, auth, account, actions
 urlpatterns = [
     path("", index.home, name="home"),
     path("filter/", index.filter_products, name="filter_products"),
-    path('signup/', auth.signup_view, name='signup'),
     path('login/', auth.login_view, name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path("account/", account.account, name="account"),
