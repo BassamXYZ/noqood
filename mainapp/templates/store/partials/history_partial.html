@@ -12,13 +12,12 @@
   <td class="text-end {% if transaction.amount > 0 %}text-success{% else %}text-danger{% endif %}">
     ${{ transaction.amount|floatformat:2 }}
   </td>
-  <td class="text-end">${{ transaction.balance_after|floatformat:2 }}</td>
 </tr>
+{% if transaction.order %}
 <tr>
-  {% if transaction.order %}
-  <td class="text-end">{{ transaction.order.key.key }}</td>
-  {% endif %}
+  <td class="text-center">{{ transaction.order.key.key }}</td>
 </tr>
+{% endif %}
 {% endfor %}
 
 {% if transactions.has_next %}

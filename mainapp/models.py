@@ -89,7 +89,8 @@ class Key(models.Model):
     price_category = models.ForeignKey(
         PriceCategory,
         on_delete=models.CASCADE,
-        related_name='keys'
+        related_name='keys',
+        null=True  # Add this line temporarily
     )
     key = models.CharField(max_length=255, unique=True)
     status = models.CharField(

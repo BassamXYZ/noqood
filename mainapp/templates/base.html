@@ -19,7 +19,7 @@
 
     .navbar {
       background-color: #0c0c0c !important;
-      border-bottom: 1px solid #447788;
+      border-bottom: 1px solid #457A80;
     }
 
     .nav-link {
@@ -30,17 +30,15 @@
     }
 
     .nav-link:hover {
-      color: #447788 !important;
+      color: #457A80 !important;
     }
 
-    .logo {
-      color: #447788 !important;
-      font-weight: bold;
-      font-size: 1.5rem;
+    .dark-bg {
+      background-color: #0c0c0c !important;
     }
 
     .balance-badge {
-      background-color: #447788;
+      background-color: #457A80;
       color: white;
       border-radius: 5px;
       padding: 5px 10px;
@@ -48,13 +46,13 @@
     }
 
     .search-btn {
-      background-color: #447788;
+      background-color: #457A80;
       color: white;
       border-right: none;
     }
 
     .search-btn:hover {
-      background-color: #4e8293;
+      background-color: #4f848a;
       color: white;
     }
 
@@ -63,7 +61,7 @@
     }
 
     .form-control:focus {
-      box-shadow: 0 0 0 .25rem #4e8293;
+      box-shadow: 0 0 0 .25rem #4f848a;
     }
 
     .navbar-collapse {
@@ -76,7 +74,7 @@
 <body>
   <nav class="navbar navbar-expand-md navbar-dark">
     <div class="container">
-      <a class="navbar-brand logo me-0" href="{% url 'home' %}"><img src="{% static 'images/logo.png' %}" alt="" width="40px"></a>
+      <a class="navbar-brand me-0" href="{% url 'home' %}"><img src="{% static 'images/logo.png' %}" alt="" width="40px"></a>
       
       <ul class="d-none d-md-flex navbar-nav ms-auto">
         <li class="nav-item">

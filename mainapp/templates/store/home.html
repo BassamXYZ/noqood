@@ -8,20 +8,29 @@
 <div class="text-center">
   <div class="btn-group mx-5" dir="ltr" role="group" aria-label="Card Types" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     {% for type in types %}
-    <button hx-get="{% url 'filter_products' %}?type={{ type | first }}" hx-target="#product-grid"
-    hx-push-url="true"
-    class="btn {% if request.GET.type == type.id %}btn-primary{% else %}btn-outline-primary{% endif %}" type="button">
+    <button
+      hx-get="{% url 'filter_products' %}?type={{ type | first }}"
+      hx-target="#product-grid"
+      hx-push-url="true"
+      class="btn btn-primary filter-btn"
+      type="button"
+      >
       {{ type | last }}
     </button>
     {% endfor %}
-    <button hx-get="{% url 'filter_products' %}" hx-target="#product-grid" hx-push-url="true"
-    class="btn {% if not request.GET.type %}btn-outline-primary{% else %}btn-primary{% endif %}" type="button">
+    <button
+      hx-get="{% url 'filter_products' %}"
+      hx-target="#product-grid"
+      hx-push-url="true"
+      class="btn btn-outline-primary filter-btn"
+      type="button"
+      >
       الكل
     </button>
   </div>
 </div>
 
-<div id="product-grid" hx-swap="outerHTML" class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4 mt-3">
+<div id="product-grid" hx-swap="outerHTML" class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-4 mt-3 px-4 px-md-0">
   {% include 'store/partials/product_list.html' %}
 </div>
 {% endblock %}
@@ -29,29 +38,40 @@
 {% block extra_css %}
 <style>
   .btn-primary {
-    background-color: #447788;
-    border-color: #447788;
+    background-color: #457A80;
+    border-color: #457A80;
   }
 
   .btn-primary:hover {
-    background-color: #4e8293;
-    border-color: #4e8293;
+    background-color: #4f848a;
+    border-color: #4f848a;
+  }
+
+  .btn-primary:disabled {
+    background-color: #4f848a;
+    border-color: #4f848a;
+  }
+
+  .btn:first-child:active,
+  :not(.btn-check)+.btn:active {
+    background-color: #4f848a;
+    border-color: #4f848a;
   }
 
   .btn-outline-primary {
-    color: #447788;
-    border-color: #447788;
+    color: #457A80;
+    border-color: #457A80;
   }
 
   .btn-outline-primary:hover {
-    background-color: #4e8293 !important;
-    border-color: #4e8293;
+    background-color: #4f848a !important;
+    border-color: #4f848a;
   }
 
   .btn-check:checked+.btn-outline-primary,
   .btn-check:active+.btn-outline-primary,
   .btn-outline-primary.active {
-    background-color: #447788;
+    background-color: #457A80;
     color: #fff;
   }
 
@@ -63,12 +83,12 @@
 
   .product-card:hover {
     transform: translateY(-5px);
-    border-color: #447788;
+    border-color: #457A80;
     box-shadow: 0 4px 15px rgba(68, 119, 136, 0.3);
   }
 
   .modal-content {
-    border: 1px solid #447788;
+    border: 1px solid #457A80;
   }
 
   .list-group-item {
@@ -83,4 +103,49 @@
 
 {% block extra_js %}
 <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+<script>
+  document.body.addEventListener('htmx:configRequest', (event) => {
+    event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+  });
+  document.addEventListener('DOMContentLoaded', function () {
+      function updateButtonStyles() {
+        // Get current URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentType = urlParams.get('type');
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+          // Get button's URL parameters
+          const btnUrl = new URL(btn.getAttribute('hx-get'), window.location.origin);
+          const btnType = btnUrl.searchParams.get('type');
+
+          if ((!currentType && !btnType) || (currentType === btnType)) {
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-outline-primary');
+          } else {
+            btn.classList.remove('btn-outline-primary');
+            btn.classList.add('btn-primary');
+          }
+        });
+      }
+
+      // Update styles on page load
+      updateButtonStyles();
+
+      // Update styles when URL changes via HTMX or browser navigation
+      document.addEventListener('htmx:afterRequest', updateButtonStyles);
+      window.addEventListener('popstate', updateButtonStyles);
+
+      // Optional: Immediate visual feedback on click
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+          document.querySelectorAll('.filter-btn').forEach(b => {
+            b.classList.remove('btn-outline-primary');
+            b.classList.add('btn-primary');
+          });
+          this.classList.add('btn-outline-primary');
+          this.classList.remove('btn-primary');
+        });
+      });
+    });
+</script>
 {% endblock %}

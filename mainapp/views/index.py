@@ -2,28 +2,23 @@ from django.core.paginator import Paginator
 from ..models import Product, Account
 from django.shortcuts import render, redirect
 from django.db.models import Q
+from django.contrib.auth.decorators import login_required
 
 
+@login_required
 def home(request):
     products = Product.objects.all()
     paginator = Paginator(products, 20)
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
+    account = Account.objects.filter(user=request.user)
 
     context = {
+        'account': account[0],
         'products': page_obj.object_list,
         'page_obj': page_obj,
         'types': Product.PRODUCT_TYPES
     }
-
-    if request.user.is_authenticated:
-        account = Account.objects.filter(user=request.user)
-        context = {
-            'account': account[0],
-            'products': page_obj.object_list,
-            'page_obj': page_obj,
-            'types': Product.PRODUCT_TYPES
-        }
 
     return render(request, 'store/home.html', context)
 

@@ -9,31 +9,33 @@
   </a>
 </div>
 
-<div class="modal fade" id="productModal-{{ product.id }}" tabindex="-1" aria-labelledby="productModalLabel"
-  aria-hidden="true">
+<div class="modal fade" id="productModal-{{ product.id }}" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content bg-dark text-white">
-      <div class="modal-header border-secondary" dir="ltr">
-        <h5 class="modal-title" id="productModalLabel">{{ product.name }}</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
+    <div class="modal-content dark-bg text-white">
       <div class="modal-body">
         <div class="mb-3">
-          <h6 class="text-muted">الفئات السعرية:</h6>
           <div class="list-group">
             {% for price_category in product.price_categories.all %}
-            <div class="list-group-item bg-dark text-white border-secondary d-flex justify-content-between align-items-center">
+            <div class="list-group-item dark-bg text-white border-secondary d-flex justify-content-between align-items-center">
               <span>{{ price_category.name }}</span>
-              <div>
-                <span class="badge bg-primary me-2">${{ price_category.price }}</span>
-                <a href="{% url 'purchase' price_category.id %}" class="btn btn-sm btn-primary">شراء</a>
-              </div>
+                <span class="mx-2">${{ price_category.price }}</span>
+                <div>
+                  <button hx-post="{% url 'purchase' price_category.id %}"
+                    hx-target="#keyContainer-{{ product.id }}" hx-trigger="click"
+                    hx-indicator="#spinner-{{ product.id }}" class="btn btn-sm btn-primary" {% if not request.user.is_authenticated %}disabled{% endif %}>
+                    شراء
+                  </button>
+                </div>
             </div>
             {% endfor %}
           </div>
         </div>
       </div>
-      <div class="modal-footer border-secondary">
+      <div class="modal-footer">
+        <span id="spinner-{{ product.id }}" class="htmx-indicator">
+          <span class="spinner-border spinner-border-sm"></span>
+        </span>
+        <div id="keyContainer-{{ product.id }}"></div>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
       </div>
     </div>
@@ -42,11 +44,14 @@
 {% endfor %}
 
 {% if page_obj.has_next %}
-<div class="load-more">
+
+<div class="load-more col d-flex align-items-center justify-content-center">
   <button
     hx-get="{% url 'filter_products' %}?page={{ page_obj.next_page_number }}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}"
-    hx-target="closest .load-more" hx-swap="outerHTML" hx-trigger="click" class="load-more-btn">
-    المزيد
+    hx-target="closest .load-more" hx-swap="outerHTML" hx-trigger="click" class="load-more-btn btn">
+    <div class="product-card h-100 p-3 rounded-3">
+      <h3 class="h5 text-white mb-2 text-center">المزيد</h3>
+    </div>
   </button>
 </div>
 {% endif %}

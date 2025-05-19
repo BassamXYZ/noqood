@@ -11,5 +11,6 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
     path("account/", account.account, name="account"),
     path("history/", account.history, name="history"),
-    path("buykey/", actions.buy_a_key, name="key"),
+    path('purchase/<int:price_category_id>/',
+         actions.purchase, name='purchase'),
 ]
