@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-wpxr(3#^i+o=933)2=l-9h%eo*9ipgs0w(u(*w6i6niwruk8j&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["cardstore-scd1.onrender.com"]
 
 
 # Application definition
